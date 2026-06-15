@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Identité Pro - Coiffure</title>
+    <!-- Importation de polices élégantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@400;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-- Icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Palette "Salon de Coiffure Premium" */
+            --primary-color: #c5a059; /* Or / Bronze */
+            --secondary-color: #f4f4f4; /* Gris très clair */
+            --accent-color: #1a1a1a; /* Noir Charbon */
+            --text-color: #333333;
+            --white: #ffffff;
+            --success: #27ae60;
+            --error: #c0392b;
+            --shadow: 0 10px 30px rgba(0,0,0,0.15);
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #bdc3c7 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- CONTENEUR PRINCIPAL --- */
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-height: 600px;
+            margin: 20px;
+        }
+
+        header {
+            background: var(--accent-color); /* Fond noir élégant */
+            color: var(--primary-color);
+            padding: 25px 20px;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        header h1 { font-size: 1.8rem; margin-bottom: 5px; color: var(--white); }
+        header p { font-size: 0.9rem; opacity: 0.8; font-weight: 400; letter-spacing: 1px; }
+
+        .game-layout {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        @media(min-width: 768px) {
+            .game-layout { flex-direction: row; }
+        }
+
+        /* --- ZONE DU PERSONNAGE (PJ) --- */
+        .character-zone {
+            background: #fafafa;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid #eee;
+            transition: background 0.5s;
+        }
+
+        @media(min-width: 768px) {
+            .character-zone {
+                width: 35%;
+                border-bottom: none;
+                border-right: 2px solid #eee;
+            }
+        }
+
+        .avatar-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 4px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .avatar-face { font-size: 80px; line-height: 1; }
+
+        .dialog-box {
+            background: var(--white);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .dialog-box::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px;
+            border-style: solid;
+            border-color: var(--white) transparent;
+            display: block;
+            width: 0;
+        }
+
+        .speech-bubble { font-style: italic; color: var(--accent-color); font-weight: bold; }
+
+        /* --- ZONE DE JEU --- */
+        .play-zone {
+            width: 100%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        @media(min-width: 768px) { .play-zone { width: 65%; } }
+
+        /* --- ÉCRANS --- */
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+            width: 100%;
+        }
+
+        .screen.active { display: flex; flex-direction: column; gap: 20px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- COMPOSANTS UI --- */
+        .btn {
+            background: var(--accent-color); /* Noir */
+            color: var(--white);
+            border: 2px solid var(--accent-color);
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 4px; /* Plus carré pour un look moderne */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent-color);
+        }
+
+        .option-btn {
+            background: var(--white);
+            border: 1px solid #ddd;
+            color: var(--text-color);
+            padding: 15px;
+            text-align: left;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 1rem;
+            border-left: 4px solid transparent;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            background: var(--secondary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .option-btn.correct { 
+            background: #eafaf1; 
+            border-color: var(--success); 
+            color: #2d3436; 
+            border-left: 4px solid var(--success);
+        }
+        .option-btn.wrong { 
+            background: #fdedec; 
+            border-color: var(--error); 
+            color: #2d3436; 
+            border-left: 4px solid var(--error);
+        }
+
+        /* --- FORMULAIRE --- */
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--accent-color); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: 'Lato', sans-serif;
+        }
+        .form-control:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 5px rgba(197, 160, 89, 0.3); }
+
+        /* --- FEEDBACK --- */
+        .feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+            font-size: 0.9rem;
+            animation: slideDown 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        .feedback-area.show { display: block; }
+        .feedback-correct { background-color: #f0fff4; color: #27ae60; border-left-color: var(--success); }
+        .feedback-wrong { background-color: #fff5f5; color: #c0392b; border-left-color: var(--error); }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-container { width: 100%; background-color: #eee; height: 6px; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--primary-color); width: 0%; transition: width 0.3s ease; }
+
+        .score-display { font-size: 3rem; color: var(--primary-color); font-family: 'Playfair Display', serif; text-align: center; margin: 20px 0; }
+        .hidden { display: none !important; }
+
+        /* --- IMPRESSION / ATTESTATION A4 --- */
+        #print-area { display: none; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            
+            #print-area {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: white;
+                z-index: 9999;
+            }
+
+            .a4-page {
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0 auto;
+                padding: 15mm;
+                border: 5px solid var(--accent-color); /* Bordure noire fine */
+                box-sizing: border-box;
+                background: #fff;
+                color: #333;
+                text-align: center;
+                position: relative;
+                
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .cert-header { font-family: 'Playfair Display', serif; font-size: 3rem; color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; }
+            .cert-subtitle { font-family: 'Lato', sans-serif; text-transform: uppercase; letter-spacing: 4px; font-size: 1rem; color: #000; margin-bottom: 40px; border-bottom: 2px solid var(--primary-color); display: inline-block; padding-bottom: 10px; }
+            
+            .cert-body { font-family: 'Lato', sans-serif; font-size: 1.1rem; line-height: 1.8; margin-bottom: 40px; }
+            .cert-name { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: bold; color: var(--accent-color); margin: 15px 0; }
+            
+            .cert-score { font-size: 1.5rem; color: var(--primary-color); font-weight: bold; background: var(--secondary-color); padding: 10px 20px; border-radius: 50px; display: inline-block; margin-top: 20px; border: 1px solid var(--primary-color); }
+            
+            .cert-footer { position: absolute; bottom: 15mm; left: 0; width: 100%; text-align: center; font-size: 0.8rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+            
+            .cert-logo { font-size: 4rem; color: var(--accent-color); margin-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <header>
+            <h1><i class="fas fa-user-tie"></i> Identité Pro Coiffure</h1>
+            <p>Posture Métier & Soft Skills</p>
+        </header>
+
+        <div class="game-layout">
+            <!-- ZONE DU PERSONNAGE -->
+            <aside class="character-zone" id="char-zone">
+                <div class="avatar-container">
+                    <div class="avatar-face" id="avatar-emoji">💇‍♀️</div>
+                </div>
+                <div class="dialog-box">
+                    <p class="speech-bubble" id="char-speech">Salut ! Prête pour ce quiz d'identité ?</p>
+                </div>
+                <div style="margin-top:15px; font-size: 0.8rem; color: #888;">
+                    Rang: <span id="player-rank">Apprentie</span>
+                </div>
+            </aside>
+
+            <!-- ZONE DE JEU -->
+            <main class="play-zone">
+                
+                <!-- ÉCRAN 1: ACCUEIL -->
+                <div id="screen-start" class="screen active">
+                    <h2>Construire son Identité</h2>
+                    <p>Ce quiz évalue votre compréhension de la posture professionnelle, de l'employabilité et de la relation client en salon.</p>
+                    <p>À la fin, obtenez votre attestation.</p>
+                    
+                    <button class="btn" onclick="startGame()">
+                        <i class="fas fa-play"></i> Commencer le Quiz
+                    </button>
+                </div>
+
+                <!-- ÉCRAN 2: QUIZ -->
+                <div id="screen-quiz" class="screen">
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <h3 id="question-text" style="margin-bottom: 20px; font-size: 1.15rem; color: var(--accent-color);">Question...</h3>
+                    <div id="options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                    
+                    <div id="feedback-area" class="feedback-area"></div>
+
+                    <button id="next-btn" class="btn hidden" style="margin-top: 20px; align-self: flex-end;" onclick="nextQuestion()">
+                        Suivant <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- ÉCRAN 3: RÉSULTATS -->
+                <div id="screen-result" class="screen" style="text-align: center;">
+                    <h2>Résultats</h2>
+                    <div class="score-display">
+                        <span id="final-score">0</span>/10
+                    </div>
+                    <p id="result-message" style="font-size: 1.1rem; line-height: 1.5;">Message de fin...</p>
+                    
+                    <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn" onclick="showCertificateForm()">
+                            <i class="fas fa-certificate"></i> Obtenir mon Attestation
+                        </button>
+                        <button class="btn btn-secondary" onclick="goToHome()">
+                            <i class="fas fa-home"></i> Retour Accueil
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ÉCRAN 4: FORMULAIRE ATTESTATION -->
+                <div id="screen-certificate" class="screen" style="text-align: center; max-width: 400px; margin: 0 auto;">
+                    <h2><i class="fas fa-id-card"></i> Vos Coordonnées</h2>
+                    <p style="margin-bottom: 20px;">Pour générer votre attestation :</p>
+                    
+                    <div class="form-group">
+                        <label for="input-nom">Nom</label>
+                        <input type="text" id="input-nom" class="form-control" placeholder="Votre nom">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="input-prenom">Prénom</label>
+                        <input type="text" id="input-prenom" class="form-control" placeholder="Votre prénom">
+                    </div>
+                    
+                    <p id="form-error" style="color: var(--error); font-size: 0.9rem; display: none;">Merci de remplir tous les champs.</p>
+
+                    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn" onclick="generateAndPrint()">
+                            <i class="fas fa-print"></i> Imprimer / PDF
+                        </button>
+                        <button class="btn btn-secondary" onclick="goToResult()">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ZONE D'IMPRESSION (CACHÉE SAUF IMPRESSION) -->
+    <div id="print-area">
+        <div class="a4-page">
+            <div class="cert-logo"><i class="fas fa-user-tie"></i></div>
+            <div class="cert-header">Attestation de Réussite</div>
+            <div class="cert-subtitle">Identité Professionnelle CAP Coiffure</div>
+            
+            <div class="cert-body">
+                <p>Nous certifions que</p>
+                <div class="cert-name" id="cert-fullname">Prénom Nom</div>
+                <p>a validé avec succès l'évaluation</p>
+                <p>« Construire son Identité Professionnelle ».</p>
+            </div>
+            
+            <div class="cert-score">
+                Score : <span id="cert-score">0</span> / 10
+            </div>
+            
+            <p style="margin-top: 30px; font-style: italic; color: #666; font-size: 0.9rem;">
+                Ce document valide la compréhension des piliers de la posture et de l'employabilité.
+            </p>
+            
+            <div class="cert-footer">
+                <p>Document généré le <span id="cert-date"></span></p>
+                <p>Formation Coiffure - Quiz Officiel</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DONNÉES DU QUIZ (IDENTITÉ PROFESSIONNELLE) ---
+        const rawQuestions = [
+            {
+                id: 1,
+                text: "Selon le manifeste de l'identité professionnelle en coiffure, quelle est la vision réductrice dite de « l'amateur » ?",
+                correct: "Se dire : « Je sais couper, donc je suis prêt », en ignorant les dimensions relationnelles et d'hygiène.",
+                options: [
+                    "Penser que la coloration est plus importante que la coupe géométrique.",
+                    "Se dire : « Je sais couper, donc je suis prêt », en ignorant les dimensions relationnelles et d'hygiène.",
+                    "Croire que le diplôme du CAP n'est pas obligatoire pour travailler en franchise."
+                ],
+                explanation: "L'amateurisme se définit par l'oubli que la technique seule ne suffit pas ; l'hygiène et la relation sont aussi cruciales."
+            },
+            {
+                id: 2,
+                text: "Quel élément constitue le véritable « centre de gravité » du métier de professionnel de la coiffure ?",
+                correct: "La confiance absolue du client.",
+                options: [
+                    "Le choix de la marque de produits capillaires du salon.",
+                    "L'emplacement géographique du salon sur une grande avenue.",
+                    "La confiance absolue du client."
+                ],
+                explanation: "Sans la confiance du client, aucune technique ni aucun produit ne peuvent fidéliser."
+            },
+            {
+                id: 3,
+                text: "Dans l'Équation de l'Employabilité, quel rôle joue l'« Intelligence Relationnelle » ?",
+                correct: "C'est le multiplicateur de vos compétences (Technique + Créativité × Intelligence Relationnelle).",
+                options: [
+                    "C'est le multiplicateur de vos compétences (Technique + Créativité × Intelligence Relationnelle).",
+                    "C'est une compétence facultative réservée uniquement aux managers.",
+                    "C'est un élément qui remplace la maîtrise technique de base."
+                ],
+                explanation: "L'intelligence relationnelle valorise et démultiplie l'impact de vos compétences techniques."
+            },
+            {
+                id: 4,
+                text: "Quelle est la durée idéale recommandée pour un « Pitch Professionnel » percutant face à un recruteur ?",
+                correct: "Strictement 30 à 45 secondes pour aller droit à l'essentiel.",
+                options: [
+                    "Entre 5 et 10 minutes pour détailler tous ses stages.",
+                    "Strictement 30 à 45 secondes pour aller droit à l'essentiel.",
+                    "Environ 3 minutes, le temps de faire un diagnostic complet."
+                ],
+                explanation: "Un bon pitch doit être court (Elevator Pitch) pour captiver l'attention immédiatement."
+            },
+            {
+                id: 5,
+                text: "Dans l'Anatomie d'un Profil d'Excellence, à quoi correspond le pilier du « Cœur » ?",
+                correct: "À l'empathie relationnelle : accueil chaleureux, patience, discrétion et compréhension du client.",
+                options: [
+                    "À la force physique requise pour tenir la station debout prolongée.",
+                    "À l'empathie relationnelle : accueil chaleureux, patience, discrétion et compréhension du client.",
+                    "À la passion artistique pour les coiffures de défilé."
+                ],
+                explanation: "Le pilier Cœur représente l'intelligence émotionnelle et la qualité de la relation humaine."
+            },
+            {
+                id: 6,
+                text: "Quel élément est associé au pilier de la « Posture » dans le profil d’un coiffeur accompli ?",
+                correct: "La présentation irréprochable, la ponctualité et le respect rigoureux des règles d'hygiène/sécurité.",
+                options: [
+                    "L'utilisation exclusive des logiciels de réservation en ligne.",
+                    "La présentation irréprochable, la ponctualité et le respect rigoureux des règles d'hygiène/sécurité.",
+                    "La capacité à réaliser un dégradé américain en moins de 10 minutes."
+                ],
+                explanation: "La posture englobe tout ce qui inspire confiance et respect : tenue, ponctualité et hygiène."
+            },
+            {
+                id: 7,
+                text: "Lors de l'architecture de votre pitch de présentation, que devez-vous mettre en avant dans la section « Valeur Ajoutée » ?",
+                correct: "Vos soft skills et votre intelligence comportementale (ex: être souriante, organisée, attentive).",
+                options: [
+                    "Votre prénom, votre nom ainsi que l'intitulé exact de votre diplôme.",
+                    "Votre socle technique opérationnel immédiat (coupe, brushing, couleur).",
+                    "Vos soft skills et votre intelligence comportementale (ex: être souriante, organisée, attentive)."
+                ],
+                explanation: "La valeur ajoutée réside souvent dans le comportement et les soft skills qui différencient un candidat."
+            },
+            {
+                id: 8,
+                text: "Face à une situation sensible ou une crise en salon (Ancrage 2), quelle est la posture professionnelle attendue ?",
+                correct: "Adopter un accueil neutre : écouter la plainte ou l'exigence du client sans juger.",
+                options: [
+                    "Interrompre immédiatement la cliente pour lui expliquer qu'elle fait erreur.",
+                    "Adopter un accueil neutre : écouter la plainte ou l'exigence du client sans juger.",
+                    "Appeler directement le responsable du salon sans chercher à comprendre le problème."
+                ],
+                explanation: "L'écoute active et la neutralité sont les clés pour désamorcer une situation tendue."
+            },
+            {
+                id: 9,
+                text: "Qu'implique le « Verrou de Sécurité / Confidentialité » (Ancrage 4) en situation sensible ?",
+                correct: "Préserver une discrétion et une confidentialité totales sur les incidents et la vie des clients.",
+                options: [
+                    "Verrouiller la caisse du salon dès qu'un litige apparaît avec un client.",
+                    "Préserver une discrétion et une confidentialité totales sur les incidents et la vie des clients.",
+                    "Ne partager les détails du litige qu'avec les clients fidèles du salon."
+                ],
+                explanation: "Le secret professionnel est absolu ; aucun incident ne doit être divulgué hors du cadre nécessaire."
+            },
+            {
+                id: 10,
+                text: "Quels sont les trois éléments clés qui composent le « Tableau de Bord Identitaire » pour atteindre l'employabilité absolue ?",
+                correct: "Forces techniques (maîtrise/hygiène), Forces relationnelles (empathie/stress) et Clarté de l'objectif cible.",
+                options: [
+                    "Rapidité, Tarifs bas, Publicité sur internet.",
+                    "Diplôme général, Expérience en entreprise, Connaissances comptables.",
+                    "Forces techniques (maîtrise/hygiène), Forces relationnelles (empathie/stress) et Clarté de l'objectif cible."
+                ],
+                explanation: "L'employabilité repose sur la combinaison équilibrée du Savoir-faire, du Savoir-être et de la vision de carrière."
+            }
+        ];
+
+        // --- VARIABLES D'ÉTAT ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let shuffledQuestions = [];
+        let isAnswering = false;
+
+        // --- UTILITAIRES ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function setCharacterMood(mood) {
+            const avatar = document.getElementById('avatar-emoji');
+            const speech = document.getElementById('char-speech');
+            const zone = document.getElementById('char-zone');
+
+            if (mood === 'neutral') {
+                avatar.innerText = '💇‍♀️';
+                zone.style.backgroundColor = '#fafafa';
+            } else if (mood === 'happy') {
+                avatar.innerText = '😎'; 
+                speech.innerText = "Top ! C'est la bonne posture !";
+                zone.style.backgroundColor = '#e8f8f5';
+            } else if (mood === 'sad') {
+                avatar.innerText = '😟';
+                speech.innerText = "Ah, non... Regarde l'explication.";
+                zone.style.backgroundColor = '#fdedec';
+            }
+        }
+
+        function resetCharacterMood() {
+            setTimeout(() => {
+                setCharacterMood('neutral');
+                document.getElementById('char-speech').innerText = "Allez, question suivante !";
+            }, 2000);
+        }
+
+        // --- NAVIGATION ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function goToHome() {
+            showScreen('screen-start');
+            setCharacterMood('neutral');
+            document.getElementById('char-speech').innerText = "Prête à évaluer ton identité pro ?";
+        }
+
+        function goToResult() {
+            showScreen('screen-result');
+        }
+
+        // --- MOTEUR DE JEU ---
+        function startGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+            shuffledQuestions = shuffleArray([...rawQuestions]); 
+            showScreen('screen-quiz');
+            loadQuestion();
+            setCharacterMood('neutral');
+            document.getElementById('char-speech').innerText = "C'est parti ! Concentre-toi sur la posture.";
+        }
+
+        function loadQuestion() {
+            isAnswering = true;
+            const currentData = shuffledQuestions[currentQuestionIndex];
+            
+            const progress = ((currentQuestionIndex) / shuffledQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+
+            document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${currentData.text}`;
+            
+            const feedbackEl = document.getElementById('feedback-area');
+            feedbackEl.classList.remove('show');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            let optionsObjects = currentData.options.map(opt => ({
+                text: opt,
+                isCorrect: opt === currentData.correct
+            }));
+            
+            optionsObjects = shuffleArray(optionsObjects);
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            optionsObjects.forEach(optObj => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = optObj.text;
+                btn.onclick = () => handleAnswer(btn, optObj.isCorrect, currentData.explanation);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedBtn, isCorrect, explanation) {
+            if (!isAnswering) return;
+            isAnswering = false;
+
+            const feedbackEl = document.getElementById('feedback-area');
+            const allBtns = document.querySelectorAll('.option-btn');
+
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+                feedbackEl.innerHTML = `<strong>Exact !</strong> <br/> ${explanation}`;
+                feedbackEl.className = 'feedback-area show feedback-correct';
+                score++;
+                setCharacterMood('happy');
+            } else {
+                selectedBtn.classList.add('wrong');
+                feedbackEl.innerHTML = `<strong>Faux.</strong> <br/> ${explanation}`;
+                feedbackEl.className = 'feedback-area show feedback-wrong';
+                setCharacterMood('sad');
+            }
+
+            allBtns.forEach(btn => btn.disabled = true);
+            resetCharacterMood();
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            showScreen('screen-result');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('progress-bar').style.width = '100%';
+            
+            const msgEl = document.getElementById('result-message');
+            const rankEl = document.getElementById('player-rank');
+
+            if (score === 10) {
+                msgEl.innerText = "Parfait ! Vous avez une identité professionnelle solide.";
+                setCharacterMood('happy');
+                rankEl.innerText = "Modèle Pro";
+            } else if (score >= 8) {
+                msgEl.innerText = "Excellent ! Vous maîtrisez bien les codes de l'employabilité.";
+                setCharacterMood('happy');
+                rankEl.innerText = "Coiffeuse Avertie";
+            } else if (score >= 5) {
+                msgEl.innerText = "Bien. Certains aspects de la posture méritent d'être approfondis.";
+                setCharacterMood('neutral');
+                rankEl.innerText = "En Formation";
+            } else {
+                msgEl.innerText = "La route est encore longue pour construire votre identité pro.";
+                setCharacterMood('sad');
+                rankEl.innerText = "Débutante";
+            }
+            
+            document.getElementById('char-speech').innerText = score >= 8 ? "Bravo !" : "Courage !";
+        }
+
+        // --- GESTION ATTESTATION ---
+        function showCertificateForm() {
+            showScreen('screen-certificate');
+            document.getElementById('input-nom').value = '';
+            document.getElementById('input-prenom').value = '';
+            document.getElementById('form-error').style.display = 'none';
+            document.getElementById('char-speech').innerText = "Remplis le formulaire pour ton papier !";
+        }
+
+        function generateAndPrint() {
+            const nom = document.getElementById('input-nom').value.trim();
+            const prenom = document.getElementById('input-prenom').value.trim();
+            const errorMsg = document.getElementById('form-error');
+
+            if (!nom || !prenom) {
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            document.getElementById('cert-fullname').innerText = `${prenom} ${nom}`;
+            document.getElementById('cert-score').innerText = score;
+            
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('cert-date').innerText = new Date().toLocaleDateString('fr-FR', options);
+
+            window.print();
+        }
+
+        // Initialisation
+        goToHome();
+
+    </script>
+</body>
+</html>
